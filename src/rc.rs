@@ -1,4 +1,4 @@
-use std::{rc::Rc, thread};
+use std::{rc::Rc, sync::Arc, thread};
 
 pub fn same_ref() {
     let a: Rc<[i32; 3]> = Rc::new([1, 2, 3]);
@@ -9,7 +9,16 @@ pub fn same_ref() {
 
 pub fn same_ref_not_threadsafe() {
     let a: Rc<[i32; 3]> = Rc::new([1, 2, 3]);
-    let b: Rc<[i32; 3]> = a.clone();
+    let _b: Rc<[i32; 3]> = a.clone();
+
+    // won't compile, not threadsafe
+    // thread::spawn(move || dbg!(a));
+    // thread::spawn(move || dbg!(_b));
+}
+
+pub fn same_ref_threadsafe() {
+    let a: Arc<[i32; 3]> = Arc::new([1, 2, 3]);
+    let b: Arc<[i32; 3]> = a.clone();
 
     thread::spawn(move || dbg!(a));
     thread::spawn(move || dbg!(b));
@@ -25,7 +34,7 @@ mod rc_tests {
     }
 
     #[test]
-    fn test_same_ref_not_threadsafe() {
-        same_ref_not_threadsafe();
+    fn test_same_ref_threadsafe() {
+        same_ref_threadsafe();
     }
 }
